@@ -16,6 +16,8 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+getgenv().auto_parry_enabled = false
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LoadingScreen"
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -495,7 +497,7 @@ do
 		Title = "AutoParry",
 		Default = false,
 		Callback = function(state)
-                auto_parry_enabled = state
+                getgenv().auto_parry_enabled = state
 	        print("Autoparry:", state)
 		end
 	})
@@ -953,9 +955,7 @@ ReplicatedStorage.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(slash: 
 end)
 
 ConnectionsManager['auto_parry'] = RunService.PostSimulation:Connect(function()
-	local auto_parry_enabled
-
-	if not auto_parry_enabled then
+	if not getgenv().auto_parry_enabled then
 		AutoParry.reset()
 
         return
