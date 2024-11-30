@@ -954,7 +954,6 @@ end)
 autoparryvar = RunService.PostSimulation:Connect(function()
 	if not getgenv().auto_parry_enabled then
 		AutoParry.reset()
-
         return
     end
 
@@ -966,8 +965,7 @@ autoparryvar = RunService.PostSimulation:Connect(function()
 
     if Character.Parent == Dead then
 		AutoParry.reset()
-		
-        return
+		return
     end
 
     if not AutoParry.ball.ball_entity then
@@ -1012,26 +1010,14 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         return
     end
 
-	if AutoParry.target.current and AutoParry.target.current.Name == LocalPlayer.Name then
-		ball_properties.auto_spam = AutoParry.is_spam({
-			speed = ball_properties.speed,
-			spam_accuracy = spam_accuracity,
-			parries = ball_properties.parries,
-			ball_speed = ball_properties.speed,
-			range = ball_properties.spam_range,
-			last_hit = ball_properties.last_hit,
-			ball_distance = ball_properties.distance,
-			maximum_speed = ball_properties.maximum_speed,
-			old_speed = AutoParry.ball.properties.old_speed,
-			entity_distance = AutoParry.entity_properties.distance,
-			last_position_distance = distance_to_last_position,
-		})
+	if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
+		local target_distance = (AutoParry.target.current.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+		if target_distance < ball_properties.parry_range then
+			AutoParry.perform_parry()
+			return
+		end
 	end
 
-	if ball_properties.auto_spam then
-        return
-    end
-	
 	if ball_properties.is_curved then
         return
     end
@@ -1040,20 +1026,20 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         return
     end
 	
-	if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
-        return
-    end
+	if AutoParry.target.current and AutoParry.target.current == LocalPlayer.Character then
+		AutoParry.perform_parry()
+		task.spawn(function()
+			repeat
+				RunService.PreSimulation:Wait(0)
+			until 
+				(tick() - ball_properties.last_hit) > 1 - (ping_threshold / 100)
 
+			ball_properties.cooldown = false
+		end)
+		return
+	end
+	
 	AutoParry.perform_parry()
-
-	task.spawn(function()
-		repeat
-			RunService.PreSimulation:Wait(0)
-		until 
-			(tick() - ball_properties.last_hit) > 1 - (ping_threshold / 100)
-
-		ball_properties.cooldown = false
-	end)
 end)
 
 task.delay(30, function()
