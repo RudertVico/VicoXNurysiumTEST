@@ -697,7 +697,7 @@ function AutoParry:is_spam()
 		return false
 	end
 
-	if (tick() - ball_properties.last_warping) < (reach_time / 1.3) and self.entity_distance > distance_threshold and self.parries < 4 then
+	if (tick() - ball_properties.last_warping) < (reach_time / 1.5) and self.entity_distance > distance_threshold and self.parries < 4 then
 		if self.parries > 3 then
 			self.parries = 1
 		end
@@ -981,8 +981,8 @@ ConnectionsManager['auto_parry'] = RunService.PostSimulation:Connect(function()
 
 	ball_properties.is_curved = AutoParry.is_curved()
 	
-	local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 10, 21)
-	local spam_accuracity = ball_properties.maximum_speed / 7 + ping_threshold
+	local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 10, 19)
+	local spam_accuracity = ball_properties.maximum_speed / 7.2 + ping_threshold
 	local parry_accuracity = ball_properties.maximum_speed / 11.7 + ping_threshold
 
 	ball_properties.spam_range = ping_threshold + ball_properties.speed / math.pi * 10
