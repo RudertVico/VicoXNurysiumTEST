@@ -98,6 +98,7 @@ notify.new({
 })
 
 local LocalPlayer = Players.LocalPlayer
+local autoparryvar
 
 local interface = loadstring(game:HttpGet('https://raw.githubusercontent.com/flezzpe/EvadeAutoBHOP/main/libs/ef.java'))()
 
@@ -653,7 +654,7 @@ function AutoParry.is_curved()
 		ball_properties.last_warping = tick() 
 	end
 
-	if (tick() - ball_properties.last_warping) < (reach_time / 1.5) then
+	if (tick() - ball_properties.last_warping) < (reach_time / 1.6) then
 		return true
 	end
 
@@ -875,7 +876,7 @@ RunService.PreSimulation:Connect(function()
     AutoParry.entity_properties.distance = LocalPlayer:DistanceFromCharacter(target_server_position)
     AutoParry.entity_properties.direction = (Player.Entity.properties.server_position - target_server_position).Unit
     AutoParry.entity_properties.speed = target_velocity.Magnitude
-    AutoParry.entity_properties.is_moving = target_velocity.Magnitude > 0.2w
+    AutoParry.entity_properties.is_moving = target_velocity.Magnitude > 0.1
     AutoParry.entity_properties.dot = AutoParry.entity_properties.is_moving and math.max(AutoParry.entity_properties.direction:Dot(target_velocity.Unit), 0)
 end)
 
@@ -954,7 +955,7 @@ ReplicatedStorage.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(slash: 
 	end
 end)
 
-ConnectionsManager['auto_parry'] = RunService.PostSimulation:Connect(function()
+autoparryvar = RunService.PostSimulation:Connect(function()
 	if not getgenv().auto_parry_enabled then
 		AutoParry.reset()
 
@@ -982,7 +983,7 @@ ConnectionsManager['auto_parry'] = RunService.PostSimulation:Connect(function()
 	ball_properties.is_curved = AutoParry.is_curved()
 	
 	local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 10, 20)
-	local spam_accuracity = ball_properties.maximum_speed / 7.2 + ping_threshold
+	local spam_accuracity = ball_properties.maximum_speed / 7.1 + ping_threshold
 	local parry_accuracity = ball_properties.maximum_speed / 11.6 + ping_threshold
 
 	ball_properties.spam_range = ping_threshold + ball_properties.speed / math.pi * 10
@@ -1063,6 +1064,34 @@ task.delay(30, function()
 	if interface.disconnected then
         return
     end
+
+-- Define a safe disconnect function to avoid errors
+local function safeDisconnect(connection)
+    if connection and connection.Disconnect then
+        connection:Disconnect()
+    end
+end
+
+-- Function to manage connections
+local function manageConnection(flag, varName, runServiceFunc)
+    if flag then
+        if not _G[varName] then
+            -- Create the RunService connection if the flag is true and connection is not already created
+            _G[varName] = RunService[runServiceFunc]:Connect(function()
+                -- Your code for what the connection does
+            end)
+        end
+    else
+        -- Disconnect and clear the connection if the flag is false
+        safeDisconnect(_G[varName])
+        _G[varName] = nil
+    end
+end
+
+-- Main loop running on Heartbeat
+RunService.Heartbeat:Connect(function()
+    manageConnection(aura_Enabled, "autoparryvar", "Heartbeat")
+end)
 
 print("All Done Initializazion:", platform)
 
