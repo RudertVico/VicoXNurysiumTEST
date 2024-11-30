@@ -685,9 +685,9 @@ function AutoParry:is_spam()
 	local reach_time = ball_properties.distance / ball_properties.maximum_speed - (player_ping / 1000)
 
 	local enemy_distance = self.entity_distance
-	local danger_distance = 7
+	local danger_distance = 4
 
-	if enemy_distance < danger_distance and self.parries > 2 then
+	if enemy_distance < danger_distance and self.parries > 1 then
 		self.parries = 0  -- Reset parries naww
 		return false
 	end
