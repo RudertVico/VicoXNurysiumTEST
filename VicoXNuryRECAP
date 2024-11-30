@@ -684,17 +684,23 @@ function AutoParry:is_spam()
 	local ball_properties = AutoParry.ball.properties
 	local reach_time = ball_properties.distance / ball_properties.maximum_speed - (player_ping / 1000)
 
-	if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
-		self.parries = 0
+	local enemy_distance = self.entity_distance
+	local danger_distance = 7
 
+	if enemy_distance < danger_distance and self.parries >= 3 then
+		self.parries = 0  -- Reset parries naww
 		return false
 	end
 
- 	if ball_properties.lerp_radians > 0.028 then
+	if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
+		self.parries = 0
+		return false
+	end
+
+	if ball_properties.lerp_radians > 0.028 then
 		if self.parries > 3 then
 			self.parries = 1
 		end
-
 		return false
 	end
 
@@ -702,7 +708,6 @@ function AutoParry:is_spam()
 		if self.parries > 3 then
 			self.parries = 1
 		end
-
 		return false
 	end
 
@@ -710,19 +715,16 @@ function AutoParry:is_spam()
 		if self.parries > 3 then
 			self.parries = 0
 		end
-
 		return false
 	end
 	
 	if self.speed < 10 then
 		self.parries = 1
-
 		return false
 	end
 
 	if self.maximum_speed < self.speed and self.entity_distance > distance_threshold then
 		self.parries = 1
-		
 		return false
 	end
 
@@ -730,7 +732,6 @@ function AutoParry:is_spam()
 		if self.parries > 2 then
 			self.parries = 1
 		end
-
 		return false
 	end
 
@@ -738,7 +739,6 @@ function AutoParry:is_spam()
 		if self.parries > 2 then
 			self.parries = 2
 		end
-
 		return false
 	end
 
@@ -746,7 +746,6 @@ function AutoParry:is_spam()
 		if self.parries > 4 then
 			self.parries = 2
 		end
-
 		return false
 	end
 
@@ -754,7 +753,6 @@ function AutoParry:is_spam()
 		if self.parries > 3 then
 			self.parries = 2
 		end
-
 		return false
 	end
 
@@ -762,11 +760,10 @@ function AutoParry:is_spam()
 		if self.parries > 3 then
 			self.parries = 2
 		end
-
 		return false
 	end
 
-    return true	
+    return true
 end
 
 RunService:BindToRenderStep('server position simulation', 1, function()
