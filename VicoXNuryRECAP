@@ -692,7 +692,7 @@ function AutoParry:is_spam()
 		return false
 	end
 
-	if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
+	if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 1 then
 		self.parries = 0
 		return false
 	end
