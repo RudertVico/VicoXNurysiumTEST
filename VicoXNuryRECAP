@@ -754,6 +754,12 @@ function AutoParry:is_spam()
 		end
 		return false
 	end
+	if self.entity_distance < self.spam_accuracy and self.entity_distance < distance_threshold then
+		if self.parries > 2 then
+			self.parries = 2
+		end
+		return true
+	end
 
 	if self.entity_distance > self.spam_accuracy and self.entity_distance > (distance_threshold - math.pi) then
 		if self.parries > 3 then
@@ -764,6 +770,7 @@ function AutoParry:is_spam()
 
     return true
 end
+
 
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
