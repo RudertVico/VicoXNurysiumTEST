@@ -664,116 +664,119 @@ end
 local old_from_target = nil :: Model
 
 function AutoParry:is_spam()
-	local target = AutoParry.target.current
+    local target = AutoParry.target.current
 
-	if not target then
-		return false
-	end
+    if not target then
+        return false
+    end
 
-	if AutoParry.target.from ~= LocalPlayer.Character then
-		old_from_target = AutoParry.target.from
-	end
+    if AutoParry.target.from ~= LocalPlayer.Character then
+        old_from_target = AutoParry.target.from
+    end
 
-	if self.parries < 3 and AutoParry.target.from == old_from_target then
-		return false
-	end
+    if self.parries < 3 and AutoParry.target.from == old_from_target then
+        return false
+    end
 
-	local player_ping = Player.Entity.properties.ping
-	local distance_threshold = 18 + (player_ping / 80)
+    local player_ping = Player.Entity.properties.ping
+    local distance_threshold = 18 + (player_ping / 80)
 
-	local ball_properties = AutoParry.ball.properties
-	local reach_time = ball_properties.distance / ball_properties.maximum_speed - (player_ping / 1000)
+    local ball_properties = AutoParry.ball.properties
+    local reach_time = ball_properties.distance / ball_properties.maximum_speed - (player_ping / 1000)
 
-	if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
-		self.parries = 0
-		return false
-	end
+    if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
+        self.parries = 0
+        return false
+    end
 
- 	if ball_properties.lerp_radians > 0.028 then
-		if self.parries > 3 then
-			self.parries = 1
-		end
-		return false
-	end
+    -- Check if the ball is curving (high lerp radians)
+    if ball_properties.lerp_radians > 0.028 then
+        -- If the ball is curving, disable the spam temporarily
+        if self.parries > 3 then
+            self.parries = 1
+        end
+        return false
+    end
 
-	if (tick() - ball_properties.last_warping) < (reach_time / 1.5) and self.entity_distance > distance_threshold and self.parries < 4 then
-		if self.parries > 3 then
-			self.parries = 1
-		end
-		return false
-	end
+    if (tick() - ball_properties.last_warping) < (reach_time / 1.5) and self.entity_distance > distance_threshold and self.parries < 4 then
+        if self.parries > 3 then
+            self.parries = 1
+        end
+        return false
+    end
 
-	if math.abs(self.speed - self.old_speed) < 5.2 and self.entity_distance > distance_threshold and self.speed < 60 and self.parries < 3 then
-		if self.parries > 3 then
-			self.parries = 0
-		end
-		return false
-	end
-	
-	if self.speed < 10 then
-		self.parries = 1
-		return false
-	end
+    if math.abs(self.speed - self.old_speed) < 5.2 and self.entity_distance > distance_threshold and self.speed < 60 and self.parries < 3 then
+        if self.parries > 3 then
+            self.parries = 0
+        end
+        return false
+    end
 
-	if self.maximum_speed < self.speed and self.entity_distance > distance_threshold then
-		self.parries = 1
-		return false
-	end
+    if self.speed < 10 then
+        self.parries = 1
+        return false
+    end
 
-	if self.entity_distance > self.range and self.entity_distance > distance_threshold then
-		if self.parries > 2 then
-			self.parries = 1
-		end
-		return false
-	end
+    if self.maximum_speed < self.speed and self.entity_distance > distance_threshold then
+        self.parries = 1
+        return false
+    end
 
-	if self.ball_distance > self.range and self.entity_distance > distance_threshold then
-		if self.parries > 2 then
-			self.parries = 2
-		end
-		return false
-	end
+    if self.entity_distance > self.range and self.entity_distance > distance_threshold then
+        if self.parries > 2 then
+            self.parries = 1
+        end
+        return false
+    end
 
-	if self.last_position_distance > self.spam_accuracy and self.entity_distance > distance_threshold then
-		if self.parries > 4 then
-			self.parries = 2
-		end
-		return false
-	end
+    if self.ball_distance > self.range and self.entity_distance > distance_threshold then
+        if self.parries > 2 then
+            self.parries = 2
+        end
+        return false
+    end
 
-	if self.ball_distance > self.spam_accuracy and self.ball_distance > distance_threshold then
-		if self.parries > 3 then
-			self.parries = 2
-		end
-		return false
-	end
+    if self.last_position_distance > self.spam_accuracy and self.entity_distance > distance_threshold then
+        if self.parries > 4 then
+            self.parries = 2
+        end
+        return false
+    end
 
-	if self.entity_distance > self.spam_accuracy and self.entity_distance > (distance_threshold - math.pi) then
-		if self.parries > 3 then
-			self.parries = 2
-		end
-		return false
-	end
+    if self.ball_distance > self.spam_accuracy and self.ball_distance > distance_threshold then
+        if self.parries > 3 then
+            self.parries = 2
+        end
+        return false
+    end
 
-	if self.entity_distance < 5 then
-		local ball_speed = ball_properties.speed
-		
-		if ball_speed < 10 then
-			local movement_factor = math.abs(self.speed - self.old_speed)
-			if movement_factor < 2 and self.parries < 3 then
-				self.parries = 1
-				return true
-			end
-		else
-			if self.parries < 3 then
-				self.parries = 1
-				return true
-			end
-		end
-	end
-	
-	return true	
+    if self.entity_distance > self.spam_accuracy and self.entity_distance > (distance_threshold - math.pi) then
+        if self.parries > 3 then
+            self.parries = 2
+        end
+        return false
+    end
+
+    if self.entity_distance < 5 then
+        local ball_speed = ball_properties.speed
+
+        if ball_speed < 10 then
+            local movement_factor = math.abs(self.speed - self.old_speed)
+            if movement_factor < 2 and self.parries < 3 then
+                self.parries = 1
+                return true
+            end
+        else
+            if self.parries < 3 then
+                self.parries = 1
+                return true
+            end
+        end
+    end
+    
+    return true    
 end
+
 
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
