@@ -787,6 +787,7 @@ function AutoParry:is_spam()
     return true
 end
 
+
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
 
