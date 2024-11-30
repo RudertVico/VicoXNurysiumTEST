@@ -875,7 +875,7 @@ RunService.PreSimulation:Connect(function()
     AutoParry.entity_properties.distance = LocalPlayer:DistanceFromCharacter(target_server_position)
     AutoParry.entity_properties.direction = (Player.Entity.properties.server_position - target_server_position).Unit
     AutoParry.entity_properties.speed = target_velocity.Magnitude
-    AutoParry.entity_properties.is_moving = target_velocity.Magnitude > 0.1
+    AutoParry.entity_properties.is_moving = target_velocity.Magnitude > 0.2w
     AutoParry.entity_properties.dot = AutoParry.entity_properties.is_moving and math.max(AutoParry.entity_properties.direction:Dot(target_velocity.Unit), 0)
 end)
 
@@ -981,12 +981,12 @@ ConnectionsManager['auto_parry'] = RunService.PostSimulation:Connect(function()
 
 	ball_properties.is_curved = AutoParry.is_curved()
 	
-	local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 10, 19)
+	local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 10, 20)
 	local spam_accuracity = ball_properties.maximum_speed / 7.2 + ping_threshold
-	local parry_accuracity = ball_properties.maximum_speed / 11.7 + ping_threshold
+	local parry_accuracity = ball_properties.maximum_speed / 11.6 + ping_threshold
 
 	ball_properties.spam_range = ping_threshold + ball_properties.speed / math.pi * 10
-    ball_properties.parry_range = ping_threshold / 5 + ball_properties.speed / math.pi * 2
+    ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 2
 
 	if Player.Entity.properties.sword == 'Titan Blade' then
 		ball_properties.parry_range += 11
