@@ -687,7 +687,7 @@ function AutoParry:is_spam()
 	local danger_distance = 4
 
 	if self.entity_distance < danger_distance and self.parries > 1 then
-		self.parries = 0  -- Reset parries naww
+		self.parries = 0
 		return false
 	end
 
