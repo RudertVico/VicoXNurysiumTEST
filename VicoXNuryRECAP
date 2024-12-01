@@ -978,10 +978,6 @@ autoparryvar = RunService.PostSimulation:Connect(function()
 
     if not AutoParry.ball.ball_entity then return end
 
-    local ball = AutoParry.ball.ball_entity
-    local ball_properties = AutoParry.ball.properties
-    local distance_to_ball = LocalPlayer:DistanceFromCharacter(ball.Position)
-
     local balls_found = 0
     local all_balls = {}
 
@@ -998,7 +994,8 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         local selected_ball = all_balls[1]
         local distance_to_ball = LocalPlayer:DistanceFromCharacter(selected_ball.Position)
 
-        if distance_to_ball <= ball_properties.parry_range then
+        if distance_to_ball <= AutoParry.ball.properties.parry_range then
+            local ball_properties = AutoParry.ball.properties
             ball_properties.is_curved = AutoParry.is_curved()
 
             local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 15, 20)
@@ -1055,6 +1052,7 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         end
     end
 end)
+
 
 task.delay(30, function()
 	if interface.disconnected then
