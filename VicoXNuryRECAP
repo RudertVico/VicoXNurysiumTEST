@@ -691,7 +691,6 @@ function AutoParry:is_spam()
 
     -- Check if the ball is curving (high lerp radians)
     if ball_properties.lerp_radians > 0.028 then
-        -- If the ball is curving, disable the spam temporarily
         if self.parries > 3 then
             self.parries = 1
         end
@@ -760,7 +759,7 @@ function AutoParry:is_spam()
     if self.entity_distance < 5 then
         local ball_speed = ball_properties.speed
 
-        if ball_speed < 10 then
+        if ball_speed < 13 then
             local movement_factor = math.abs(self.speed - self.old_speed)
             if movement_factor < 2 and self.parries < 2 then
                 self.parries = 2
@@ -988,10 +987,10 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     ball_properties.is_curved = AutoParry.is_curved()
     
     local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 15, 20)
-    local spam_accuracity = ball_properties.maximum_speed / 7.3 + ping_threshold
-    local parry_accuracity = ball_properties.maximum_speed / 11.6 + ping_threshold
+    local spam_accuracity = ball_properties.maximum_speed / 7.5 + ping_threshold
+    local parry_accuracity = ball_properties.maximum_speed / 11.7 + ping_threshold
 
-    ball_properties.spam_range = math.min(ping_threshold + ball_properties.speed / math.pi * 4, 50)
+    ball_properties.spam_range = math.min(ping_threshold + ball_properties.speed / math.pi * 4, 55)
     ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 2
 
     if Player.Entity.properties.sword == 'Titan Blade' then
@@ -1038,7 +1037,7 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     end
 
 local pings = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
-local pingset = 100
+local pingset = 1000
 
 if ball_properties.auto_spam then
     if pings > pingset then
