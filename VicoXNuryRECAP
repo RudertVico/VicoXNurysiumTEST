@@ -1051,8 +1051,6 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     end
     
     if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
-     AutoParry.perform_parry()
-    else
         return
     end
 
