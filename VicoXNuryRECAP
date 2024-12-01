@@ -690,6 +690,7 @@ function AutoParry:is_spam()
     local medium_range = 20
     local long_range = 30
 
+    -- Check for AutoSpam based on target distance
     if target_distance < close_range then
         if self.parries < 3 then
             self.parries = 1
@@ -709,6 +710,7 @@ function AutoParry:is_spam()
         return false
     end
 
+    -- Additional checks for ball properties and speed
     if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
         self.parries = 0
         return false
