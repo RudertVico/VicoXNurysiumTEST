@@ -980,36 +980,35 @@ auto_parryvar = RunService.PostSimulation:Connect(function()
         return
     end
 
-    local balls = {}
-    for _, ball in ipairs(workspace:GetChildren()) do
-        if ball:IsA("Ball") then
-            table.insert(balls, ball)
-        end
-    end
-
-    if #balls == 0 then
+    if not workspace.CurrentlySelectedMode then
         return
     end
 
-    local target_ball = nil
+    local balls = workspace.CurrentlySelectedMode:GetChildren()
+    local ball_count = 0
+    local closest_ball = nil
     local closest_distance = math.huge
+
     for _, ball in ipairs(balls) do
-        local ball_properties = ball:GetProperties()
-        local distance_to_ball = LocalPlayer:DistanceFromCharacter(ball.Position)
-        
-        if distance_to_ball < closest_distance then
-            target_ball = ball
-            closest_distance = distance_to_ball
+        if ball:IsA("Ball") then
+            ball_count = ball_count + 1
+
+            -- Cari bola terdekat
+            local distance_to_ball = LocalPlayer:DistanceFromCharacter(ball.Position)
+            if distance_to_ball < closest_distance then
+                closest_ball = ball
+                closest_distance = distance_to_ball
+            end
         end
     end
 
-    if not target_ball then
+    if ball_count == 0 or not closest_ball then
         return
     end
 
-    local ball_properties = target_ball:GetProperties()
+    local ball_properties = AutoParry.ball.properties
     ball_properties.is_curved = AutoParry.is_curved()
-
+    
     local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 15, 20)
     local spam_accuracity = ball_properties.maximum_speed / 7.3 + ping_threshold
     local parry_accuracity = ball_properties.maximum_speed / 11.6 + ping_threshold
@@ -1020,7 +1019,7 @@ auto_parryvar = RunService.PostSimulation:Connect(function()
     if Player.Entity.properties.sword == 'Titan Blade' then
         ball_properties.parry_range += 11
         ball_properties.spam_range += 2
-    end
+    end    
 
     local distance_to_last_position = LocalPlayer:DistanceFromCharacter(ball_properties.last_position)
 
@@ -1071,7 +1070,7 @@ auto_parryvar = RunService.PostSimulation:Connect(function()
     if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracity then
         return
     end
-
+    
     if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
         return
     end
@@ -1085,7 +1084,6 @@ auto_parryvar = RunService.PostSimulation:Connect(function()
         ball_properties.cooldown = false
     end)
 end)
-
 
 task.delay(30, function()
 	if interface.disconnected then
