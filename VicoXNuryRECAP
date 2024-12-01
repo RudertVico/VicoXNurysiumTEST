@@ -1054,7 +1054,6 @@ end
 
 if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracity then
     if pings > pingset then
-        ball_properties.parry_range
     end
     return
 end
