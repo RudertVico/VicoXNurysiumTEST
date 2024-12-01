@@ -665,7 +665,6 @@ local old_from_target = nil :: Model
 
 function AutoParry:is_spam()
     local target = AutoParry.target.current
-
     if not target then
         return false
     end
@@ -696,26 +695,10 @@ function AutoParry:is_spam()
         return false
     end
 
-    if ball_properties.lerp_radians <= 0.028 then
-        if self.entity_distance < 10 then
-            local ball_speed = ball_properties.speed
-            if ball_speed < 20 then
-                local movement_factor = math.abs(self.speed - self.old_speed)
-                if movement_factor < 2 and self.parries < 3 then
-                    self.parries = 1
-                    return true
-                end
-            else
-                if self.parries < 3 then
-                    self.parries = 1
-                    return true
-                end
-            end
+    if (tick() - ball_properties.last_warping) < (reach_time / 1.5) and self.entity_distance > distance_threshold and self.parries < 4 then
+        if self.parries > 3 then
+            self.parries = 1
         end
-    end
-
-    if ball_properties.speed < 10 then
-        self.parries = 1
         return false
     end
 
@@ -730,23 +713,34 @@ function AutoParry:is_spam()
         local ball_speed = ball_properties.speed
         if ball_speed < 20 then
             local movement_factor = math.abs(self.speed - self.old_speed)
-            if movement_factor < 2 and self.parries < 3 then
+            if movement_factor < 2 and self.parries >= 2 then
                 self.parries = 1
                 return true
             end
         else
-            if self.parries < 3 then
+            if self.parries >= 2 then
                 self.parries = 1
                 return true
             end
         end
-    elseif self.entity_distance > 10 and self.entity_distance < 20 then
-        if ball_properties.speed > 20 and self.parries < 2 then
-            self.parries = 1
-            return true
+    end
+
+    if ball_properties.speed < 10 then
+        self.parries = 1
+        return false
+    end
+
+    if self.entity_distance > 10 and self.entity_distance < 20 then
+        local ball_speed = ball_properties.speed
+        if ball_speed > 20 then
+            if self.parries < 2 then
+                self.parries = 1
+                return true
+            end
         end
-    else
-        if ball_properties.speed > 30 and self.parries < 1 then
+    elseif self.entity_distance > 20 then
+        local ball_speed = ball_properties.speed
+        if ball_speed > 30 and self.parries < 2 then
             self.parries = 1
             return true
         end
@@ -763,16 +757,6 @@ function AutoParry:is_spam()
         if self.parries > 2 then
             self.parries = 2
         end
-        return false
-    end
-
-    if ball_properties.speed < 10 then
-        self.parries = 1
-        return false
-    end
-
-    if self.entity_distance > 20 and self.parries > 0 then
-        self.parries = 0
         return false
     end
 
