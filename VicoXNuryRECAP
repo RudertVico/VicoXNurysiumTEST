@@ -972,11 +972,7 @@ autoparryvar = RunService.PostSimulation:Connect(function()
 
     local Character = LocalPlayer.Character
 
-    if not Character then
-        return
-    end
-
-    if Character.Parent == Dead then
+    if not Character or Character.Parent == Dead then
         AutoParry.reset()
         return
     end
@@ -987,10 +983,10 @@ autoparryvar = RunService.PostSimulation:Connect(function()
 
     local ball_properties = AutoParry.ball.properties
     ball_properties.is_curved = AutoParry.is_curved()
-    
+
     local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 15, 20)
-    local spam_accuracity = ball_properties.maximum_speed / 7.3 + ping_threshold
-    local parry_accuracity = ball_properties.maximum_speed / 11.6 + ping_threshold
+    local spam_accuracy = ball_properties.maximum_speed / 7.3 + ping_threshold
+    local parry_accuracy = ball_properties.maximum_speed / 11.6 + ping_threshold
 
     ball_properties.spam_range = ping_threshold + ball_properties.speed / math.pi * 12
     ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 2
@@ -1001,11 +997,16 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     end    
 
     local distance_to_last_position = LocalPlayer:DistanceFromCharacter(ball_properties.last_position)
+    local nearest_target = AutoParry.get_nearest_target(ball_properties.parry_range)
+
+    if nearest_target and nearest_target ~= AutoParry.target.current then
+        AutoParry.target.current = nearest_target
+    end
 
     if ball_properties.auto_spam and AutoParry.target.current then
         ball_properties.auto_spam = AutoParry.is_spam({
             speed = ball_properties.speed,
-            spam_accuracy = spam_accuracity,
+            spam_accuracy = spam_accuracy,
             parries = ball_properties.parries,
             ball_speed = ball_properties.speed,
             range = ball_properties.spam_range / (3.15 - ping_threshold / 10),
@@ -1022,10 +1023,10 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         return
     end
 
-    if AutoParry.target.current and AutoParry.target.current.Name == LocalPlayer.Name then
+    if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
         ball_properties.auto_spam = AutoParry.is_spam({
             speed = ball_properties.speed,
-            spam_accuracy = spam_accuracity,
+            spam_accuracy = spam_accuracy,
             parries = ball_properties.parries,
             ball_speed = ball_properties.speed,
             range = ball_properties.spam_range,
@@ -1041,15 +1042,15 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     if ball_properties.auto_spam then
         return
     end
-    
+
     if ball_properties.is_curved then
         return
     end
 
-    if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracity then
+    if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracy then
         return
     end
-    
+
     if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
         return
     end
@@ -1065,7 +1066,6 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         ball_properties.cooldown = false
     end)
 end)
-
 
 task.delay(30, function()
 	if interface.disconnected then
