@@ -709,10 +709,10 @@ function AutoParry:is_spam()
         return false
     end
 
-    -- Jarak sangat dekat, aktifkan parry 1x (jarak 7)
+    -- Jarak sangat dekat, aktifkan parry 2x (jarak 7)
     if self.entity_distance < 7 then
-        if self.parries == 0 then
-            self.parries = 1
+        if self.parries < 2 then
+            self.parries = 2
             return true
         end
     end
@@ -721,13 +721,13 @@ function AutoParry:is_spam()
         local ball_speed = ball_properties.speed
         if ball_speed < 20 then
             local movement_factor = math.abs(self.speed - self.old_speed)
-            if movement_factor < 2 and self.parries >= 2 then
-                self.parries = 1
+            if movement_factor < 2 and self.parries < 2 then
+                self.parries = 2
                 return true
             end
         else
-            if self.parries >= 2 then
-                self.parries = 1
+            if self.parries < 2 then
+                self.parries = 2
                 return true
             end
         end
@@ -742,14 +742,14 @@ function AutoParry:is_spam()
         local ball_speed = ball_properties.speed
         if ball_speed > 20 then
             if self.parries < 2 then
-                self.parries = 1
+                self.parries = 2
                 return true
             end
         end
     elseif self.entity_distance > 20 then
         local ball_speed = ball_properties.speed
         if ball_speed > 30 and self.parries < 2 then
-            self.parries = 1
+            self.parries = 2
             return true
         end
     end
@@ -770,7 +770,6 @@ function AutoParry:is_spam()
 
     return true
 end
-
 
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
