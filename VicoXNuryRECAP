@@ -709,8 +709,8 @@ function AutoParry:is_spam()
         return false
     end
 
-    -- Jarak sangat dekat, aktifkan parry 1x (jarak 3)
-    if self.entity_distance < 3 then
+    -- Jarak sangat dekat, aktifkan parry 1x (jarak 7)
+    if self.entity_distance < 7 then
         if self.parries == 0 then
             self.parries = 1
             return true
@@ -770,6 +770,7 @@ function AutoParry:is_spam()
 
     return true
 end
+
 
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
