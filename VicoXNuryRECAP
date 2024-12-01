@@ -709,15 +709,14 @@ function AutoParry:is_spam()
         return false
     end
 
-    -- Jarak sangat dekat, aktifkan parry 2x (jarak 7)
-    if self.entity_distance < 7 then
+    if self.entity_distance < 12 then
         if self.parries < 2 then
             self.parries = 2
             return true
         end
     end
 
-    if self.entity_distance < 10 then
+    if self.entity_distance < 7 then
         local ball_speed = ball_properties.speed
         if ball_speed < 20 then
             local movement_factor = math.abs(self.speed - self.old_speed)
