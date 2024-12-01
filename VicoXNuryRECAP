@@ -760,7 +760,7 @@ function AutoParry:is_spam()
     if self.entity_distance < 5 then
         local ball_speed = ball_properties.speed
 
-        if ball_speed < 10 then
+        if ball_speed < 20 then
             local movement_factor = math.abs(self.speed - self.old_speed)
             if movement_factor < 2 and self.parries < 3 then
                 self.parries = 1
