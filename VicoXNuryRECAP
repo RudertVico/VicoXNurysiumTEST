@@ -684,56 +684,58 @@ function AutoParry:is_spam()
     local ball_properties = AutoParry.ball.properties
     local reach_time = ball_properties.distance / ball_properties.maximum_speed - (player_ping / 1000)
 
+    -- Check cooldown and distance threshold
     if (tick() - self.last_hit) > 0.8 and self.entity_distance > distance_threshold and self.parries < 2 then
         self.parries = 0
         return false
     end
 
+    -- Check if the ball is curving (high lerp radians)
     if ball_properties.lerp_radians > 0.028 then
+        -- Disable spam temporarily if the ball is curving
         if self.parries > 3 then
             self.parries = 1
         end
         return false
     end
 
-    if (tick() - ball_properties.last_warping) < (reach_time / 1.5) and self.entity_distance > distance_threshold and self.parries < 4 then
-        if self.parries > 3 then
-            self.parries = 1
-        end
-        return false
-    end
-
-    if math.abs(self.speed - self.old_speed) < 5.2 and self.entity_distance > distance_threshold and self.speed < 60 and self.parries < 3 then
-        if self.parries > 3 then
-            self.parries = 0
-        end
-        return false
-    end
-
-    if self.entity_distance < 10 then
-        local ball_speed = ball_properties.speed
-        if ball_speed < 20 then
-            local movement_factor = math.abs(self.speed - self.old_speed)
-            if movement_factor < 2 and self.parries < 3 then
-                self.parries = 1
-                return true
-            end
-        else
-            if self.parries < 3 then
-                self.parries = 1
-                return true
+    -- Check if the ball is stable (not curving)
+    if ball_properties.lerp_radians <= 0.028 then
+        -- Continue spam after curve is no longer active
+        if self.entity_distance < 10 then
+            local ball_speed = ball_properties.speed
+            if ball_speed < 20 then
+                local movement_factor = math.abs(self.speed - self.old_speed)
+                if movement_factor < 2 and self.parries < 3 then
+                    self.parries = 1
+                    return true
+                end
+            else
+                if self.parries < 3 then
+                    self.parries = 1
+                    return true
+                end
             end
         end
     end
 
+    -- Handling when the ball is slowing down or has low speed
     if ball_properties.speed < 10 then
         self.parries = 1
         return false
     end
 
+    -- Spam check based on range (adjusted for accuracy)
     if self.entity_distance > self.range and self.entity_distance > distance_threshold then
         if self.parries > 2 then
             self.parries = 1
+        end
+        return false
+    end
+
+    if self.ball_distance > self.range and self.entity_distance > distance_threshold then
+        if self.parries > 2 then
+            self.parries = 2
         end
         return false
     end
@@ -745,8 +747,24 @@ function AutoParry:is_spam()
         return false
     end
 
+    if self.ball_distance > self.spam_accuracy and self.ball_distance > distance_threshold then
+        if self.parries > 3 then
+            self.parries = 2
+        end
+        return false
+    end
+
+    if self.entity_distance > self.spam_accuracy and self.entity_distance > (distance_threshold - math.pi) then
+        if self.parries > 3 then
+            self.parries = 2
+        end
+        return false
+    end
+
+    -- Handling spam when the ball slows down or has low speed
     if self.entity_distance < 5 then
         local ball_speed = ball_properties.speed
+
         if ball_speed < 20 then
             local movement_factor = math.abs(self.speed - self.old_speed)
             if movement_factor < 2 and self.parries < 3 then
@@ -760,8 +778,8 @@ function AutoParry:is_spam()
             end
         end
     end
-    
-    return true    
+
+    return true
 end
 
 
