@@ -748,13 +748,6 @@ function AutoParry:is_spam()
         return false
     end
 
-    if self.entity_distance > self.spam_accuracy and self.entity_distance > (distance_threshold - math.pi) then
-        if self.parries > 3 then
-            self.parries = 2
-        end
-        return false
-    end
-
     if self.entity_distance < 7 then
         if self.parries < 2 then
             self.parries = 1
@@ -809,21 +802,12 @@ function AutoParry:is_spam()
         end
     end
 
-    if self.ball_distance > self.range * 2 then
-        if self.parries > 2 then
-            self.parries = 0
-        end
-        return false
+    if ball_properties.speed < 8 and self.parries < 2 then
+        self.parries = 1
+        return true
     end
 
-    if self.entity_distance < 4 then
-        if self.parries < 2 then
-            self.parries = 1
-            return true
-        end
-    end
-
-    if ball_properties.lerp_radians > 0.015 and self.entity_distance < 6 then
+    if self.entity_distance < 4 and ball_properties.target == self.entity then
         if self.parries < 3 then
             self.parries = 1
             return true
@@ -833,18 +817,6 @@ function AutoParry:is_spam()
     if self.entity_distance < 3 and ball_properties.speed > 15 then
         local ball_distance_to_target = ball_properties.distance - self.entity_distance
         if ball_distance_to_target < 10 and self.parries < 3 then
-            self.parries = 1
-            return true
-        end
-    end
-
-    if ball_properties.speed < 8 and self.parries < 2 then
-        self.parries = 1
-        return true
-    end
-
-    if self.entity_distance < 4 and ball_properties.target == self.entity then
-        if self.parries < 3 then
             self.parries = 1
             return true
         end
