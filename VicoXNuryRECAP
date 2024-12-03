@@ -986,12 +986,12 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     local ball_properties = AutoParry.ball.properties
     ball_properties.is_curved = AutoParry.is_curved()
     
-    local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 15, 20)
+    local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 12, 16)
     local spam_accuracity = ball_properties.maximum_speed / 7.5 + ping_threshold
-    local parry_accuracity = ball_properties.maximum_speed / 11.7 + ping_threshold
+    local parry_accuracity = ball_properties.maximum_speed / 11.3 + ping_threshold
 
     ball_properties.spam_range = math.min(ping_threshold + ball_properties.speed / math.pi * 4, 90)
-    ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 2
+    ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 1
 
     if Player.Entity.properties.sword == 'Titan Blade' then
         ball_properties.parry_range += 11
@@ -1037,7 +1037,7 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     end
 
 local pings = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
-local pingset = 1000
+local pingset = 100
 
 if ball_properties.auto_spam then
     if pings > pingset then
