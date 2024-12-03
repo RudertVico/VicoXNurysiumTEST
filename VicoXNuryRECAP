@@ -822,7 +822,7 @@ function AutoParry:is_spam()
         end
     end
 
-    return false
+    return true
 end
  
 RunService:BindToRenderStep('server position simulation', 1, function()
