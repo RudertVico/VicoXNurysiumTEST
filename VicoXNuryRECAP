@@ -689,7 +689,6 @@ function AutoParry:is_spam()
         return false
     end
 
-    -- Check if the ball is curving (high lerp radians)
     if ball_properties.lerp_radians > 0.028 then
         if self.parries > 3 then
             self.parries = 1
@@ -756,6 +755,43 @@ function AutoParry:is_spam()
         return false
     end
 
+    if self.entity_distance < 7 then
+        if self.parries < 2 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    if self.entity_distance < 4 then
+        if (tick() - self.last_hit) > 0.4 then
+            if self.parries < 3 then
+                self.parries = 1
+                return true
+            end
+        end
+    end
+
+    if ball_properties.speed > 20 and self.entity_distance < 10 then
+        if self.parries < 2 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    if (tick() - self.last_parry_time) < 0.4 then
+        self.parries = 1
+        return false
+    end
+
+    if ball_properties.target == self.entity then
+        if self.entity_distance < 7 then
+            if self.parries < 3 then
+                self.parries = 1
+                return true
+            end
+        end
+    end
+
     if self.entity_distance < 5 then
         local ball_speed = ball_properties.speed
 
@@ -772,10 +808,51 @@ function AutoParry:is_spam()
             end
         end
     end
-    
-    return true    
-end
 
+    if self.ball_distance > self.range * 2 then
+        if self.parries > 2 then
+            self.parries = 0
+        end
+        return false
+    end
+
+    if self.entity_distance < 4 then
+        if self.parries < 2 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    if ball_properties.lerp_radians > 0.015 and self.entity_distance < 6 then
+        if self.parries < 3 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    if self.entity_distance < 3 and ball_properties.speed > 15 then
+        local ball_distance_to_target = ball_properties.distance - self.entity_distance
+        if ball_distance_to_target < 10 and self.parries < 3 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    if ball_properties.speed < 8 and self.parries < 2 then
+        self.parries = 1
+        return true
+    end
+
+    if self.entity_distance < 4 and ball_properties.target == self.entity then
+        if self.parries < 3 then
+            self.parries = 1
+            return true
+        end
+    end
+
+    return true
+end
+ 
 RunService:BindToRenderStep('server position simulation', 1, function()
     local ping = Stats.Network.ServerStatsItem['Data Ping']:GetValue()
 
@@ -985,13 +1062,19 @@ autoparryvar = RunService.PostSimulation:Connect(function()
 
     local ball_properties = AutoParry.ball.properties
     ball_properties.is_curved = AutoParry.is_curved()
-    
-    local ping_threshold = math.clamp(Player.Entity.properties.ping / 10, 12, 16)
+
+    local current_ping = Player.Entity.properties.ping
+    local previous_ping = ball_properties.previous_ping or current_ping
+    local ping_spike = math.abs(current_ping - previous_ping) > 50
+
+    ball_properties.previous_ping = current_ping
+
+    local ping_threshold = math.clamp(current_ping / 10, 10, 16)
     local spam_accuracity = ball_properties.maximum_speed / 7.5 + ping_threshold
     local parry_accuracity = ball_properties.maximum_speed / 11.3 + ping_threshold
 
     ball_properties.spam_range = math.min(ping_threshold + ball_properties.speed / math.pi * 4, 90)
-    ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 1
+    ball_properties.parry_range = ping_threshold / 10 + ball_properties.speed / math.pi * 2
 
     if Player.Entity.properties.sword == 'Titan Blade' then
         ball_properties.parry_range += 11
@@ -999,6 +1082,11 @@ autoparryvar = RunService.PostSimulation:Connect(function()
     end    
 
     local distance_to_last_position = LocalPlayer:DistanceFromCharacter(ball_properties.last_position)
+
+    if ping_spike then
+        ball_properties.spam_range = ball_properties.spam_range * 1.5
+        ball_properties.parry_range = ball_properties.parry_range * 1.5
+    end
 
     if ball_properties.auto_spam and AutoParry.target.current then
         ball_properties.auto_spam = AutoParry.is_spam({
@@ -1036,32 +1124,30 @@ autoparryvar = RunService.PostSimulation:Connect(function()
         })
     end
 
-local pings = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
-local pingset = 100
+    local pings = Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 10
+    local pingset = 100
 
-if ball_properties.auto_spam then
-    if pings > pingset then
+    if ping_spike then
+        if pings > pingset then
+            return
+        end
     end
-    return
-end
 
-if ball_properties.is_curved then
-    if pings > pingset then
+    if ball_properties.is_curved then
+        if pings > pingset then
+            return
+        end
     end
-    return
-end
 
-if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracity then
-    if pings > pingset then
+    if ball_properties.distance > ball_properties.parry_range and ball_properties.distance > parry_accuracity then
+        return
     end
-    return
-end
 
-if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
-    if pings > pingset then
+    if AutoParry.target.current and AutoParry.target.current ~= LocalPlayer.Character then
+        if pings > pingset then
+            return
+        end
     end
-    return
-end
 
     AutoParry.perform_parry()
 
@@ -1074,7 +1160,6 @@ end
         ball_properties.cooldown = false
     end)
 end)
-
 
 task.delay(30, function()
 	if interface.disconnected then
@@ -1106,7 +1191,7 @@ end
 
 -- Main loop running on Heartbeat
 RunService.Heartbeat:Connect(function()
-    manageConnection(aura_Enabled, "autoparryvar", "PostSimulation")
+    manageConnection("getgenv().auto_parry_enabled", "autoparryvar", "PostSimulation")
 end)
 
 print("All Done Initializazion:", platform)
