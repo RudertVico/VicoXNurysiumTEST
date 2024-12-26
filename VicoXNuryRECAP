@@ -329,28 +329,18 @@ function Player:get_closest_player_to_cursor()
     return closest_player
 end
 
+local parry
+
 local platform = game:GetService("UserInputService").TouchEnabled and "Android" or "PC"
 
 print("Platform detected:", platform)
 
-function AutoParry.get_parry_remote()
-    local Services = {cloneref(game:GetService("AnimationFromVideoCreatorService")), cloneref(game:GetService('AdService'))}
-
-    for _, v in pairs(Services) do
-        local temp_remote = v:FindFirstChildOfClass('RemoteEvent')
-    
-        if temp_remote and temp_remote.Name:find('\n') then
-            AutoParry.ball.properties.parry_remote = temp_remote
-            print("RemoteEvent found on platform:", platform, " | Remote Name:", temp_remote.Name)
-        end
-    end
-
-    if not AutoParry.ball.properties.parry_remote then
-        warn("No valid RemoteEvent found on platform:", platform)
+for i,v in getgc() do
+    if type(v) == "function" and debug.getinfo(v).name == "Parry" then      
+        parry = v
+        break
     end
 end
-
-AutoParry.get_parry_remote()
 
 function AutoParry.perform_grab_animation()
 	local animation = ReplicatedStorage.Shared.SwordAPI.Collection.Default:FindFirstChild('GrabParry')
@@ -439,7 +429,7 @@ function AutoParry.perform_parry()
 	else
 		direction = CFrame.new(camera_direction, target_position + Vector3.new(0, 60, 0))
 
-		ball_properties.parry_remote:FireServer(
+		parry(
 			0,
 			direction,
 			{ [AutoParry.target.aim.Name] = target_position },
@@ -456,7 +446,7 @@ function AutoParry.perform_parry()
 		return
 	end
 
-	ball_properties.parry_remote:FireServer(
+	parry(
 		0.5,
 		direction,
 		{ [AutoParry.target.aim.Name] = target_position },
